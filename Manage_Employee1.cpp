@@ -21,8 +21,8 @@ class Employee{
 	public:
 		long size;
 		
-		friend istream& operator >> (istream& Emp, Employee &el);
-		friend ostream& operator << (ostream& Emp, Employee &el);
+		friend istream& operator >> (istream& is, Employee &el);
+		friend ostream& operator << (ostream& is, Employee &el);
 		int getYoW();
 		int getDayoff();
 		
@@ -36,8 +36,8 @@ class Productor : public Employee {
 		float Money; // money for 1 product
 		int NoP; // number of product
 	public:
-		friend istream& operator >> (istream& Pro, Employee &el);
-		friend ostream& operator << (ostream& Pro, Employee &el);
+		friend istream& operator >> (istream& is, Productor &el);
+		friend ostream& operator << (ostream& is, Productor &el);
 		float SalaryPro();
 };
 
@@ -47,8 +47,8 @@ class Officer : public Employee {
 		float BasicSalary;
 		int NoW; // number of work day
 	public:
-		friend istream& operator >> (istream& Off, Employee &el);
-		friend ostream& operator << (ostream& Off, Employee &el);
+		friend istream& operator >> (istream& is, Officer &el);
+		friend ostream& operator << (ostream& is, Officer &el);
 		float SalaryOff();
 };
 
@@ -58,38 +58,38 @@ class Office {
 		Productor *NVSX;
 		Officer *NVVP;
 	public:
-		friend istream& operator >> (istream& is, Employee &el);
-		friend ostream& operator << (ostream& os, Employee &el);
+		friend istream& operator >> (istream& is, Office &el);
+		friend ostream& operator << (ostream& os, Office &el);
 };
 
 // Employee
-istream& operator >> (istream& Emp, Employee &el)
+istream& operator >> (istream& is, Employee &el)
 {
 	cout << "Enter name: ";
 	cin.ignore();
-	getline(cin, el.Name);
+	is.getline(el.Name);
 	cout << "Enter ID: ";
-	getline(cin, el.id);
+	is.getline(el.id);
 	cout << "Enter day of birth: ";
 	cin.ignore();
-	cin >> el.DoB.day >> el.DoB.month >> el.DoB.year;
+	is >> el.DoB.day >> el.DoB.month >> el.DoB.year;
 	cout << "Enter place of birth: ";
-	cin >> el.PoB;
+	is >> el.PoB;
 	cout << "Enter year of work: ";
-	cin >> el.YearofWork;
+	is >> el.YearofWork;
 	cout << "Enter day off: ";
-	cin >> el.Dayoff;
-	return Emp;
+	is >> el.Dayoff;
+	return is;
 }
 
-ostream& operator << (ostream& Emp, Employee &el){
-	cout << el.Name  << setw(10) << endl;
-	cout << el.id << setw(10) << endl;
-	cout << el.DoB.day << "/" << el.DoB.month << "/" << el.DoB.year << setw(10) << endl;
-	cout << el.PoB << setw(10) << endl;
-	cout << el.YearofWork << setw(10) << endl;
-	cout << el.Dayoff << setw(10) << endl;
-	return Emp;
+ostream& operator << (ostream& os, Employee &el){
+	cout <<"Name: " << el.Name  << setw(10) << endl;
+	cout <<"ID: " << el.id << setw(10) << endl;
+	cout <<"dd/mm/yy: " << el.DoB.day << "/" << el.DoB.month << "/" << el.DoB.year << setw(10) << endl;
+	cout <<"Place of birth: " << el.PoB << setw(10) << endl;
+	cout <<"Year of Work: " << el.YearofWork << setw(10) << endl;
+	cout <<"Day off: " << el.Dayoff << setw(10) << endl;
+	return os;
 }
 
 int Employee::getYoW() {
@@ -102,10 +102,94 @@ int Employee::getDayoff() {
 
 // Productor
 
-istream& operator >> (istream& Pro, Employee &el) {
-	
-	
+istream& operator >> (istream& is, Productor &el) {
+	Employee *p = &el;
+	is >> *p;
+	cout << "Enter money for 1 product: ";
+	is >> el.Money;
+	cout << "Enter the number of product: ";
+	is >> el.NoP;
+	return is;
 }
+
+ostream& operator >> (ostream& os, Productor &el) {
+	Employee *p = &el;
+	os << *p;
+	os << "Money: " << el.Money <<setw(10) << endl;
+	os << "Number of product: " << el.NoP <<setw(10) << endl;
+	return os;
+}
+
+float Productor::SalaryPro() {
+	float slr = 0;
+	slr = Money*NoP - getDayoff()*Money*NoP;
+	if (getYoW() >= 1 && getYoW <=4) {
+		slr += 4500000;
+	}
+	if (getYoW() <= 10) {
+		slr += 8000000;
+	}
+	else {
+		slr += 15000000;
+	}
+	return slr;
+}
+
+// Officer
+
+istream& operator >> (istream& is, Officer &el) {
+	Employee *o = &el;
+	is >> *o;
+	cout << "Enter basic salary: ";
+	is >> el.BasicSalary;
+	cout << "Enter the number of working days: ";
+	is >> el.NoW;
+	return is;
+}
+
+ostream& operator >> (ostream& os, Officer &el) {
+	Employee *o = &el;
+	os << *o;
+	os << "Basic Salary: " << el.BasicSalary << setw(10) << endl;
+	os << "Number of working days: " << el.NoW << setw(10) <<endl;
+	return os;
+}
+
+float Officer::SalaryOff() {
+	float slr = 0;
+	slr = BasicSalary*NoW*(30 - getDayoff());
+	if (getYoW() >= 1 && getYoW() <= 4){
+		slr += 4500000;
+	}
+	if (getYoW() <= 10){
+		slr += 8000000;
+	}
+	else {
+		slr += 15000000;
+	}
+	return slr;
+}
+
+// Office
+
+istream& operator >> (istream& is, Office &el) {
+	int n;
+	// Productor in Office
+	cout << "Enter the number of productor: ";
+	is >> n;
+	NVSX = new Productor[n];
+	NVSX->size = n;
+	for (int i = 0; i < n; i++) {
+		
+	}
+}
+
+
+
+
+
+
+
 
 
 
