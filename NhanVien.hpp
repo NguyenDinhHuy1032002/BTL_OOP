@@ -9,11 +9,11 @@ class Ngay {
     	int nam;
     public:
     	int Getter_Ngay();
-		int Setter_Ngay(int NGAY);
+	int Setter_Ngay(int NGAY);
     	int Getter_Thang(); 
-		int Setter_Thang(int THANG);
-		int Getter_Nam(); 
-		int Setter_Nam(int NAM);  	
+	int Setter_Thang(int THANG);
+	int Getter_Nam(); 
+	int Setter_Nam(int NAM);  	
 };
 
 class NhanVien {
