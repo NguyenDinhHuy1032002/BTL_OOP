@@ -7,7 +7,7 @@ int Ngay::Getter_Ngay(){
     return ngay;
 }
 // phuong thuc setter cua ngay
-int Ngay::Setter_Ngay(int NGAY) {
+void Ngay::Setter_Ngay(int NGAY) {
     ngay =  NGAY;
 }
 // phuong thuc getter cua thang
@@ -15,7 +15,7 @@ int Ngay::Getter_Thang() {
 	return thang
 }
 // phuong thuc setter cua thang
-int Ngay::Setter_Thang(int THANG) {
+void Ngay::Setter_Thang(int THANG) {
 	thang = THANG;
 }
 // phuong thuc getter cua nam
@@ -23,7 +23,7 @@ int  Ngay::Getter_Nam() {
 	return nam;
 }
 // phuong thuc setter cua nam
-int Ngay::Setter_Nam(int NAM) {
+void Ngay::Setter_Nam(int NAM) {
 	nam = NAM;
 }
 
@@ -59,11 +59,18 @@ void NhanVien::Doc_File(ifstream &filein) {
 	filein >> nam;
 	NgaySinh.Setter_Nam(nam);
 	filein.seekg(2, 1);
-	filein >> LuongCoBan;
-	filein.seekg(1, 1);
 	filein >> NamLamViec;
 	filein.seekg(1, 1);
 	filein >> SoNgayNghi;
+}
+
+void NhanVien::Xuat() {
+    cout << "Ho ten: " << Ten << endl;
+    cout << "Ma nhan vien: " << Ma << endl;
+    cout << "Noi sinh: " << endl;
+    cout << "Ngay sinh: " << NgaySinh.Getter_Ngay() << "/" << NgaySinh.Getter_Thang() << "/" << NgaySinh.Getter_Nam() << endl;
+    cout << "Nam lam viec: " << NamLamViec << endl;
+    cout << "So ngay nghi: " << SoNgayNghi << endl;
 }
 
 float NhanVien::getLuong() {
@@ -84,6 +91,15 @@ void NhanVienSanXuat::Doc_File(ifstream &filein) {
 	filein >> DonGiaMotSanPham;
 	filein.seekg(1, 1);
 	filein >> SoSanPham;
+}
+
+void NhanVienSanXuat::Xuat() {
+	NhanVien::Xuat();
+	cout << "Don gia mot san pham: " <<DonGiaMotSanPham<< endl;
+	cout << "So san pham: " <<SoSanPham<< endl;
+	this->TinhLuong();
+	cout <<"Luong co ban: "<< LuongCoBan << endl;
+	cout <<endl;
 }
 
 float NhanVienSanXuat::TinhLuong() {
@@ -109,6 +125,14 @@ void NhanVienVanPhong::Doc_File(ifstream &filein) {
 	filein >> SoNgayLam;
 }
 
+void NhanVienVanPhong::Xuat() {
+	NhanVien::Xuat();
+	cout << "He so luong: " <<HeSoLuong<< endl;
+	cout << "So ngay lam: " <<SoNgayLam<< endl;
+	this->TinhLuong();
+	cout <<"Luong co ban: "<< LuongCoBan << endl;
+	cout <<endl;
+}
 
 float NhanVienVanPhong::TinhLuong() {
 	float Luong = 0;
