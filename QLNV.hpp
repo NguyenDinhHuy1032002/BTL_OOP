@@ -1,33 +1,31 @@
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 #include <conio.h>
+#include <string>
 using namespace std;
 
 struct Date {
     int ngay, thang, nam;
 };
 
-void Doc_Ngay(ifstream& filein, Date &NgaySinh) {
-    filein >> NgaySinh.ngay;
-    filein.ignore();
-    filein >> NgaySinh.thang;
-    filein.ignore();
-    filein >> NgaySinh.nam;
-    filein.ignore();
-}
-
 class NhanVien {
     private:
-        string Ma;
+        string MaNV;
         string HoTen;
+        string NoiSinh;
         Date NgaySinh;
         long LuongCoBan;
     public:
-        virtual void Doc_File(ifstream& filein);
+        NhanVien();
+        ~NhanVien();
+        virtual void doc_File(ifstream& filein);
+        virtual void Nhap();
         virtual void Xuat();
         virtual long TinhLuong() = 0;
         long getLuong();
+        string getMaNV();
+        string getNoiSinh();
+        int getNamSinh();
         long getLuongCoBan();
 };
 
@@ -36,17 +34,36 @@ class NhanVienSanXuat : public NhanVien {
         float GiaMotSP;
         int SoSP;
     public:
-        void Doc_File(ifstream& filein);
+        NhanVienSanXuat();
+        ~NhanVienSanXuat();
+        void doc_File(ifstream& filein);
+        void Nhap();
+        void Xuat();
+       	long TinhLuong();
+};
+
+class NhanVienVanPhong : public NhanVien {
+     private:
+        float HeSoLuong;
+        int SoNgayLam;
+     public:
+        NhanVienVanPhong();
+        ~NhanVienVanPhong();
+        void doc_File(ifstream& filein);
+        void Nhap();
         void Xuat();
         long TinhLuong();
 };
 
-class NhanVienVanPhong : public NhanVien {
-    private:
-        float HeSoLuong;
-        int SoNgayLam;
-    public:
-        void Doc_File(ifstream& filein);
-        void Xuat();
-        long TinhLuong();
+class QuanLyNhanVien {
+	private:
+		NhanVien *nv[1000];
+		int n;
+	public:
+		void doc_File(ifstream& filein);
+		void Xuat_DS();
+		void ThemNV();
+		void XoaNV();
+		void SapXep();
+		void TimKiem();
 };
