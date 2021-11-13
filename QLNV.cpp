@@ -1,4 +1,4 @@
-#include "QLNV.hpp"
+#include "NhanVien.h"
 
 void doc_Ngay(ifstream& filein, Date &NgaySinh) {
 	filein >> NgaySinh.ngay;
@@ -29,6 +29,7 @@ void NhanVien::doc_File(ifstream& filein) {
 	getline(filein, HoTen, ',');
 	filein.ignore();
 	getline(filein, NoiSinh, ',');
+    filein.ignore();
 	doc_Ngay(filein, NgaySinh);
 	filein >> LuongCoBan;
 	filein.ignore();
@@ -50,11 +51,9 @@ void NhanVien::Nhap() {
 }
 
 void NhanVien::Xuat() {
-	cout << "Ma nhan vien: " << MaNV << endl;
-	cout << "Ho ten: " << HoTen << endl;
-	cout << "Noi sinh: " << NoiSinh << endl;
-	cout << "Ngay sinh: " << NgaySinh.ngay << "/" << NgaySinh.thang << "/" << NgaySinh.nam << endl;
-	cout << "Luong co ban: " << LuongCoBan << endl;
+	cout << setw(12) << MaNV << setw(25) << HoTen << setw(20) << NoiSinh << setw(10);
+	cout << NgaySinh.ngay << "/" << NgaySinh.thang << "/" << NgaySinh.nam << setw(20);
+	cout << LuongCoBan << setw(27);
 }
 
 long NhanVien::getLuong() {
@@ -63,6 +62,10 @@ long NhanVien::getLuong() {
 
 string NhanVien::getMaNV() {
 	return this->MaNV;
+}
+
+string NhanVien::getTen() {
+	return this->HoTen;
 }
 
 string NhanVien::getNoiSinh() {
@@ -104,9 +107,7 @@ void NhanVienSanXuat::Nhap() {
 
 void NhanVienSanXuat::Xuat() {
 	NhanVien::Xuat();
-	cout << "Gia 1 san pham: " << GiaMotSP << endl;
-	cout << "So san pham: " << SoSP << endl;
-	cout << "Luong: " << this->TinhLuong() << endl;
+	cout << GiaMotSP << setw(30) << SoSP << setw(24) << this->TinhLuong() << setw(15) << endl;
 }
 
 long NhanVienSanXuat::TinhLuong() {
@@ -140,9 +141,7 @@ void NhanVienVanPhong::Nhap() {
 
 void NhanVienVanPhong::Xuat() {
 	NhanVien::Xuat();
-	cout << "He so luong: " << HeSoLuong << endl;
-	cout << "So ngay lam: " << SoNgayLam << endl;
-	cout << "Luong: " << this->TinhLuong() << endl;
+	cout << HeSoLuong << setw(30) << SoNgayLam << setw(25) << this->TinhLuong() << setw(15) << endl;
 }
 
 long NhanVienVanPhong::TinhLuong() {
@@ -151,27 +150,37 @@ long NhanVienVanPhong::TinhLuong() {
 
 //Quan ly nhan vien
 void QuanLyNhanVien::doc_File(ifstream& filein) {
-	filein >> n;
-	filein.ignore();
-	for(int i=0; i<n; i++) {
-		NhanVien *NV;
-		char c;
-		filein >> c;
-		if(c == 'P') {
-			NV = new NhanVienSanXuat;
-			NV->doc_File(filein);
+	filein.open("dulieu.txt", ios_base::in);
+	if(!filein.is_open()) {
+		cout << "\t\tKhong tim thay file!";
+	}
+	else {
+		filein >> n;
+		filein.ignore();
+		for(int i=0; i<n; i++) {
+			NhanVien *NV;
+			char c;
+			filein >> c;
+			if(c == 'P') {
+				NV = new NhanVienSanXuat;
+				NV->doc_File(filein);
+			}
+			else if(c == 'O') {
+				NV = new NhanVienVanPhong;
+				NV->doc_File(filein);
+			}
+			nv[i] = NV;
 		}
-		else if(c == 'O') {
-			NV = new NhanVienVanPhong;
-			NV->doc_File(filein);
-		}
-		nv[i] = NV;
+		cout << "\t\tDoc file thanh cong!";
+		filein.close();
 	}
 }
 
 void QuanLyNhanVien::Xuat_DS() {
-	cout << "\nSo luong nhan vien: " << n << endl;
-	cout << "===================DANH SACH NHAN VIEN======================" << endl;
+	cout << "So luong nhan vien: " << n << endl;
+	cout << "\n -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------";
+    cout << "\n||    MA NHAN VIEN    ||    HO VA TEN    ||    NOI SINH    ||    NGAY SINH    ||      LUONG CO BAN      ||    DON GIA/HE SO LUONG    ||    SO LUONG/SO NGAY LAM    ||    LUONG    ||";
+    cout << "\n -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
 	for(int i=0; i<n; i++) {
 		nv[i]->Xuat();
 		cout << endl;
@@ -179,27 +188,91 @@ void QuanLyNhanVien::Xuat_DS() {
 }
 
 void QuanLyNhanVien::ThemNV() {
-	NhanVien *NV;
-	int pos, key;
-	cout << "Nhap vi tri muon them: "; cin >> pos;
 	system("cls");
-	cout << "\n1. Nhan vien san xuat.";
-	cout << "\n2. Nhan vien van phong.";
-	cout << "\nNhap lua chon: "; cin >> key;
-	if(key == 1) {
-		NV = new NhanVienSanXuat;
-		NV->Nhap();
+	int viTriChon = 0, pos;
+	NhanVien *NV;
+	Menu *m = new Menu;
+	vector<string> menu = {"NHAN VIEN SAN XUAT", "NHAN VIEN VAN PHONG", "TRO VE"};
+	bool troVe = false;
+	while (true) {
+		system("cls");
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		cout << "\n\n\t\t\tChon loai nhan vien muon them\n\n";
+		for (int i = 0; i < menu.size(); ++i) {
+			if (viTriChon == i) {
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+				cout << "\n\t\t\t\t" << right << setw(5) << ">> " << left << setw(25) << menu[i];
+			}
+			else {
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+				cout << "\n\t\t\t\t" << right << setw(5) << "   " << left << setw(25) << menu[i];
+			}
+		}
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		int diChuyenPhim;
+		if (_kbhit) {
+			diChuyenPhim = m->phimDiChuyen();
+			switch (diChuyenPhim) {
+				case 1:
+				case 3: {
+					viTriChon += 1;
+					if (viTriChon == menu.size())
+						viTriChon = 0;
+					break;
+				}
+				case 2:
+				case 4: {
+					viTriChon -= 1;
+					if (viTriChon == -1)
+						viTriChon = menu.size() - 1;
+					break; 
+				}
+				case 5: {
+					if (viTriChon == menu.size() - 1) {
+						troVe = true;
+						break;
+					}
+					else {
+						system("cls");
+						switch(viTriChon) {
+							case 0:
+								cout << "Nhap vi tri muon them: "; cin >> pos;
+								NV = new NhanVienSanXuat;
+								NV->Nhap();
+								for(int i=n; i>pos; i--) {
+									nv[i] = nv[i-1];
+								}
+								nv[pos] = NV;
+								++n;
+								Xuat_DS();
+								system("pause");
+								break;
+							case 1:
+								cout << "Nhap vi tri muon them: "; cin >> pos;
+								NV = new NhanVienVanPhong;
+								NV->Nhap();
+								for(int i=n; i>pos; i--) {
+									nv[i] = nv[i-1];
+								}
+								nv[pos] = NV;
+								++n;
+								Xuat_DS();
+								system("pause");
+								break;
+							default:
+								break;
+						}
+					}
+					break;
+				}
+				default:
+					break;
+				}
+			}
+			if (troVe == true) {
+				break;
+		}
 	}
-	else if(key == 2) {
-		NV = new NhanVienVanPhong;
-		NV->Nhap();
-	}
-	for(int i=n; i>pos; i--) {
-		nv[i] = nv[i-1];
-	}
-	nv[pos] = NV;
-	++n;
-	Xuat_DS();
 }
 
 void QuanLyNhanVien::XoaNV() {
@@ -213,204 +286,734 @@ void QuanLyNhanVien::XoaNV() {
 }
 
 void QuanLyNhanVien::TimKiem() {
-	int key, dem = 0;
 	system("cls");
-	cout << "\n1. Tim kiem theo ma nhan vien.";
-	cout << "\n2. Tim kiem theo noi sinh.";
-	cout << "\n3. Tim kiem theo nam sinh.";
-	cout << "\nNhap lua chon: "; cin >> key;
-	if(key == 1) {
-		string MNV;
-		cout << "Nhap ma nhan vien can tim: ";
-		cin.ignore();
-		getline(cin, MNV);
-		for(int i=0; i<n; i++) {
-			if(nv[i]->getMaNV() == MNV) {
-				nv[i]->Xuat();
-				cout << endl;
-				dem++;
+	vector<string> menu = { "THEO MA NHAN VIEN", "THEO HO VA TEN", "THEO NOI SINH", "THEO NAM SINH", "TRO VE" };
+	int pointer = 0;
+	bool troVe = false;
+	Menu *m = new Menu;
+	string ma, ten, ns;
+	int nam;
+	while (true) {
+		system("cls");
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		wcout << L"\n\t\t\t\tChon tieu chi tim kiem\n";
+		for (int i = 0; i < menu.size(); ++i) {
+			if (i == pointer) {
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+				cout << "\n\t\t\t\t|" << right << setw(10) << ">>  " << left << setw(34) << menu[i] << right << setw(0) << "|";
+				}
+				else {
+					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+					cout << "\n\t\t\t\t|" << right << setw(10) << "  " << left << setw(34) << menu[i] << right << setw(0) << "|";
+				}
 			}
-		}
-		if(dem == 0)
-			cout << "\nKhong co nhan vien nao co ma nay!";
-		dem = 0;
-	}
-	else if(key == 2) {
-		string NS;
-		cout << "Nhap noi sinh can tim: ";
-		cin.ignore();
-		getline(cin, NS);
-		for(int i=0; i<n; i++) {
-			if(nv[i]->getNoiSinh() == NS) {
-				nv[i]->Xuat();
-				cout << endl;
-				dem++;
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+			int x;
+			if (_kbhit) {
+				x = m->phimDiChuyen();
+				switch (x) {
+				case 1:
+				case 3: {
+					pointer += 1;
+					if (pointer == 5)
+						pointer = 0;
+					break; }
+				case 2:
+				case 4: {
+					pointer -= 1;
+					if (pointer == -1)
+						pointer = 4;
+					break; }
+				case 5: {
+					if (pointer == menu.size() - 1) {
+						troVe = true;
+						break;
+					}
+					else {
+						int dem = 0;
+						system("cls");
+						switch(pointer) {
+							case 0:
+								cout << "\nNhap ma nhan vien muon tim: ";
+								cin.ignore(); getline(cin, ma);
+								for(int i=0; i<n; i++) {
+									if(ma == nv[i]->getMaNV()) {
+										nv[i]->Xuat();
+										++dem;
+									}
+								}
+								if(dem == 0)
+									cout << "\nKhong tin thay nhan vien!\n";
+								system("pause");
+								break;
+							case 1:
+								cout << "\nNhap ten nhan vien muon tim: ";
+								cin.ignore(); getline(cin, ten);
+								for(int i=0; i<n; i++) {
+									if(ten == nv[i]->getTen()) {
+										nv[i]->Xuat();
+										++dem;
+									}
+								}
+								if(dem == 0)
+									cout << "\nKhong tim thay nhan vien!\n";
+								system("pause");
+								break;
+							case 2:
+								cout << "\nNhap noi sinh muon tim: ";
+								cin.ignore(); getline(cin, ns);
+								for(int i=0; i<n; i++) {
+									if(ns == nv[i]->getNoiSinh()) {
+										nv[i]->Xuat();
+										++dem;
+									}
+								}
+								if(dem == 0)
+									cout << "\nKhong tim thay nhan vien!\n";
+								system("pause");
+								break;
+							case 3:
+								cout << "\nNhap nam sinh muon tim: ";
+								cin.ignore(); cin >> nam;
+								for(int i=0; i<n; i++) {
+									if(nam == nv[i]->getNamSinh()) {
+										nv[i]->Xuat();
+										++dem;
+									}
+								}
+								if(dem == 0)
+									cout << "\nKhong tim thay nhan vien!\n";
+								system("pause");
+								break;
+							default:
+								break;
+						}
+					}
+					break;
+				}
+				default:
+					break;
+				}
 			}
+			if (troVe == true) {
+				break;
 		}
-		if(dem == 0)
-			cout << "\nKhong co nhan vien nao co noi sinh nay!";
-		dem = 0;
-	}
-	else if(key == 3) {
-		int nam;
-		cout << "\nNhap nam sinh can tim: ";
-		cin >> nam;
-		for(int i=0; i<n; i++) {
-			if(nv[i]->getNamSinh() == nam) {
-				nv[i]->Xuat();
-				cout << endl;
-				dem++;
-			}
-		}
-		if(dem == 0)
-			cout << "\nKhong co nhan vien nao co nam sinh nay!";
 	}
 }
 
-void Swap(NhanVien *nv1, NhanVien *nv2) {
-	NhanVien *nv3 = nv1;
+void HoanVi(NhanVien *&nv1, NhanVien *&nv2) {
+	NhanVien *nv3;
+	nv3 = nv1;
 	nv1 = nv2;
 	nv2 = nv3;
 }
 
 void QuanLyNhanVien::SapXep() {
-	int key;
 	system("cls");
-	cout << "\n1. Sap xep theo ma nhan vien.";
-	cout << "\n2. Sap xep theo noi sinh.";
-	cout << "\n3. Sap xep theo nam sinh.";
-	cout << "\n4. Sap xep theo luong.";
-	cout << "\nNhap lua chon: "; cin >> key;
-	if(key == 1) {
-		for(int i=0; i<n; i++) {
-			for(int j=i+1; j<n; j++) {
-				if(nv[i]->getMaNV() > nv[j]->getMaNV())
-					Swap(nv[i], nv[j]);
+	vector<string> menu = { "THEO MA NHAN VIEN", "THEO HO VA TEN", "THEO NOI SINH", "THEO NAM SINH", "THEO LUONG", "TRO VE" };
+	int pointer = 0;
+	Menu *m = new Menu;
+	bool troVe = false;
+	while (true) {
+		system("cls");
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		cout << "\n\t\t\t\tChon tieu chi sap xep\n";
+		for (int i=0; i<menu.size(); ++i) {
+			if (i == pointer) {
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+				cout << "\n\t\t\t\t|" << right << setw(10) << ">>  " << left << setw(34) << menu[i] << right << setw(0) << "|";
+			}
+			else {
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+				cout << "\n\t\t\t\t|" << right << setw(10) << "  " << left << setw(34) << menu[i] << right << setw(0) << "|";
 			}
 		}
-	}
-	else if(key == 2) {
-		for(int i=0; i<n; i++) {
-			for(int j=i+1; j<n; j++) {
-				if(nv[i]->getNoiSinh() > nv[j]->getNoiSinh())
-					Swap(nv[i], nv[j]);
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		int x;
+		if (_kbhit) {
+			x = m->phimDiChuyen();
+			switch (x) {
+				case 1:
+				case 3: {
+					pointer += 1;
+					if (pointer == 6)
+						pointer = 0;
+					break; }
+				case 2:
+				case 4: {
+					pointer -= 1;
+					if (pointer == -1)
+						pointer = 5;
+					break; }
+				case 5: {
+					if (pointer == menu.size() - 1) {
+						troVe = true;
+						break;
+					}
+					else {
+						system("cls");
+						vector<string> menuChon;
+						int vitriChon = 0;
+						Menu *k = new Menu;
+						bool quayLai = false;
+						switch(pointer) {
+							case 0: 
+								menuChon = { "CHIEU XUOI", "CHIEU NGUOC", "QUAY LAI" };
+								while (true) {
+									system("cls");
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									cout << "\n\t\t\t\tChon chieu sap xep\n";
+									for (int i=0; i<menuChon.size(); ++i) {
+										if (i == vitriChon) {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+											cout << "\n\t\t\t\t|" << right << setw(10) << ">>  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+										else {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+											cout << "\n\t\t\t\t|" << right << setw(10) << "  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+									}
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									int v;
+									v = k->phimDiChuyen();
+									switch (v) {
+										case 1:
+										case 3: {
+											vitriChon += 1;
+											if (vitriChon == 3)
+												vitriChon = 0;
+											break; }
+										case 2:
+										case 4: {
+											vitriChon -= 1;
+											if (vitriChon == -1)
+												vitriChon = 2;
+											break; }
+										case 5: {
+											if(vitriChon == menuChon.size() - 1) {
+												quayLai = true;
+												break;
+											}
+											else {
+												system("cls");
+												switch(vitriChon) {
+													case 0:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																char* str1 = new char[nv[i]->getMaNV().length()];
+																strcpy(str1, nv[i]->getMaNV().c_str());
+																char* str2 = new char[nv[j]->getMaNV().length()];
+																strcpy(str2, nv[j]->getMaNV().c_str());
+																if(strcmp(str1, str2) > 0) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													case 1:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																char* str1 = new char[nv[i]->getMaNV().length()];
+																strcpy(str1, nv[i]->getMaNV().c_str());
+																char* str2 = new char[nv[j]->getMaNV().length()];
+																strcpy(str2, nv[j]->getMaNV().c_str());
+																if(strcmp(str1, str2) < 0) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													default:
+														break;
+												}
+											}
+											break;
+										}
+										default:
+											break;
+									}
+									if (quayLai == true)
+										break;
+								}
+								break;	
+							case 1:
+								menuChon = { "CHIEU XUOI", "CHIEU NGUOC", "QUAY LAI" };
+								while (true) {
+									system("cls");
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									cout << "\n\t\t\t\tChon chieu sap xep\n";
+									for (int i=0; i<menuChon.size(); ++i) {
+										if (i == vitriChon) {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+											cout << "\n\t\t\t\t|" << right << setw(10) << ">>  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+										else {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+											cout << "\n\t\t\t\t|" << right << setw(10) << "  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+									}
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									int v;
+									v = k->phimDiChuyen();
+									switch (v) {
+										case 1:
+										case 3: {
+											vitriChon += 1;
+											if (vitriChon == 3)
+												vitriChon = 0;
+											break; }
+										case 2:
+										case 4: {
+											vitriChon -= 1;
+											if (vitriChon == -1)
+												vitriChon = 2;
+											break; }
+										case 5: {
+											if(vitriChon == menuChon.size() - 1) {
+												quayLai = true;
+												break;
+											}
+											else {
+												system("cls");
+												switch(vitriChon) {
+													case 0:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																char* str1 = new char[nv[i]->getTen().length()];
+																strcpy(str1, nv[i]->getTen().c_str());
+																char* str2 = new char[nv[j]->getTen().length()];
+																strcpy(str2, nv[j]->getTen().c_str());
+																if(strcmp(str1, str2) > 0) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													case 1:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																char* str1 = new char[nv[i]->getTen().length()];
+																strcpy(str1, nv[i]->getTen().c_str());
+																char* str2 = new char[nv[j]->getTen().length()];
+																strcpy(str2, nv[j]->getTen().c_str());
+																if(strcmp(str1, str2) < 0) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													default:
+														break;
+												}
+											}
+											break;
+										}
+										default:
+											break;
+									}
+									if (quayLai == true)
+										break;
+								}
+								break;		
+							case 2:
+								menuChon = { "CHIEU XUOI", "CHIEU NGUOC", "QUAY LAI" };
+								while (true) {
+									system("cls");
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									cout << "\n\t\t\t\tChon chieu sap xep\n";
+									for (int i=0; i<menuChon.size(); ++i) {
+										if (i == vitriChon) {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+											cout << "\n\t\t\t\t|" << right << setw(10) << ">>  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+										else {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+											cout << "\n\t\t\t\t|" << right << setw(10) << "  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+									}
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									int v;
+									v = k->phimDiChuyen();
+									switch (v) {
+										case 1:
+										case 3: {
+											vitriChon += 1;
+											if (vitriChon == 3)
+												vitriChon = 0;
+											break; }
+										case 2:
+										case 4: {
+											vitriChon -= 1;
+											if (vitriChon == -1)
+												vitriChon = 2;
+											break; }
+										case 5: {
+											if(vitriChon == menuChon.size() - 1) {
+												quayLai = true;
+												break;
+											}
+											else {
+												system("cls");
+												switch(vitriChon) {
+													case 0:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																char* str1 = new char[nv[i]->getNoiSinh().length()];
+																strcpy(str1, nv[i]->getNoiSinh().c_str());
+																char* str2 = new char[nv[j]->getNoiSinh().length()];
+																strcpy(str2, nv[j]->getNoiSinh().c_str());
+																if(strcmp(str1, str2) > 0) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													case 1:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																char* str1 = new char[nv[i]->getNoiSinh().length()];
+																strcpy(str1, nv[i]->getNoiSinh().c_str());
+																char* str2 = new char[nv[j]->getNoiSinh().length()];
+																strcpy(str2, nv[j]->getNoiSinh().c_str());
+																if(strcmp(str1, str2) < 0) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													default:
+														break;
+												}
+											}
+											break;
+										}
+										default:
+											break;
+									}
+									if (quayLai == true)
+										break;
+								}
+								break;	
+							case 3:
+								menuChon = { "TANG DAN", "GIAM DAN", "QUAY LAI" };
+								while (true) {
+									system("cls");
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									cout << "\n\t\t\t\tChon chieu sap xep\n";
+									for (int i=0; i<menuChon.size(); ++i) {
+										if (i == vitriChon) {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+											cout << "\n\t\t\t\t|" << right << setw(10) << ">>  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+										else {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+											cout << "\n\t\t\t\t|" << right << setw(10) << "  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+									}
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									int v;
+									v = k->phimDiChuyen();
+									switch (v) {
+										case 1:
+										case 3: {
+											vitriChon += 1;
+											if (vitriChon == 3)
+												vitriChon = 0;
+											break; }
+										case 2:
+										case 4: {
+											vitriChon -= 1;
+											if (vitriChon == -1)
+												vitriChon = 2;
+											break; }
+										case 5: {
+											if(vitriChon == menuChon.size() - 1) {
+												quayLai = true;
+												break;
+											}
+											else {
+												system("cls");
+												switch(vitriChon) {
+													case 0:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																if(nv[i]->getNamSinh() > nv[j]->getNamSinh()) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													case 1:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																if(nv[i]->getNamSinh() < nv[j]->getNamSinh()) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													default:
+														break;
+												}
+											}
+											break;
+										}
+										default:
+											break;
+									}
+									if (quayLai == true)
+										break;
+								}
+								break;	
+							case 4:
+								menuChon = { "LON DAN", "NHO DAN", "QUAY LAI" };
+								while (true) {
+									system("cls");
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									cout << "\n\t\t\t\tChon chieu sap xep\n";
+									for (int i=0; i<menuChon.size(); ++i) {
+										if (i == vitriChon) {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+											cout << "\n\t\t\t\t|" << right << setw(10) << ">>  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+										else {
+											SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+											cout << "\n\t\t\t\t|" << right << setw(10) << "  " << left << setw(34) << menuChon[i] << right << setw(0) << "|";
+										}
+									}
+									SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+									int v;
+									v = k->phimDiChuyen();
+									switch (v) {
+										case 1:
+										case 3: {
+											vitriChon += 1;
+											if (vitriChon == 3)
+												vitriChon = 0;
+											break; }
+										case 2:
+										case 4: {
+											vitriChon -= 1;
+											if (vitriChon == -1)
+												vitriChon = 2;
+											break; }
+										case 5: {
+											if(vitriChon == menuChon.size() - 1) {
+												quayLai = true;
+												break;
+											}
+											else {
+												system("cls");
+												switch(vitriChon) {
+													case 0:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																if(nv[i]->getLuong() > nv[j]->getLuong()) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													case 1:
+														for(int i=0; i<n-1; i++) {
+															for(int j=n-1; j>i; j--) {
+																if(nv[i]->getLuong() < nv[j]->getLuong()) {
+																	HoanVi(nv[i], nv[j]);
+																} 
+															}
+														}
+														Xuat_DS();
+														system("pause");
+														break;
+													default:
+														break;
+												}
+											}
+											break;
+										}
+										default:
+											break;
+									}
+									if (quayLai == true)
+										break;
+								}
+								break;	
+							default:
+								break;
+						}	
+					}
+					break;
+				}
+				default:
+					break;
 			}
 		}
+		if (troVe == true)
+				break;	
 	}
-	else if(key == 3) {
-		for(int i=0; i<n; i++) {
-			for(int j=i+1; j<n; j++) {
-				if(nv[i]->getNamSinh() > nv[j]->getNamSinh())
-					Swap(nv[i], nv[j]);
-			}
-		}
-	}
-	else if(key == 4) {
-		for(int i=0; i<n; i++) {
-			for(int j=i+1; j<n; j++) {
-				if(nv[i]->getLuong() > nv[j]->getLuong())
-					Swap(nv[i], nv[j]);
-			}
-		}
-	}
-	Xuat_DS();
 }
 
-int Menu() {
-	int key;
-	ifstream filein;
-	QuanLyNhanVien *QLNV = new QuanLyNhanVien;
-	filein.open("dulieu.txt", ios_base::in);
-	bool daDoc = false;
-	while(true) {
+Menu::Menu() {}
+
+int Menu::phimDiChuyen() {
+	char c = _getch();
+	if ((int)c == -32) c = _getch();
+	switch ((int)c) {
+		case 80:
+			return 1; //cout << "Xuong";
+		case 72:
+			return 2; //cout << "Len";
+		case 77:
+			return 3; //cout << "Phai";       
+		case 75:
+			return 4; //cout << "Trai";
+		case 27:
+			return 8; //Nut ESC thoat
+		case 13:
+			return 5; //Nut Enter
+		default:
+			return 0; //cout << "Sai";
+	}
+}
+
+int MENU() {
+	vector<string> menu = { "DOC DU LIEU TU FILE", "XEM DANH SACH NHAN VIEN", "SAP XEP NHAN VIEN", "THEM NHAN VIEN", "XOA NHAN VIEN", "TIM KIEM", "THOAT CHUONG TRINH" };
+	int pointer = 0;
+	ifstream file;
+	QuanLyNhanVien *QLVN = new QuanLyNhanVien;
+	Menu *m = new Menu;
+	while (true) {
+		fflush(stdin);
 		system("cls");
-		cout << "\n************************ DANH SACH CHUC NANG *************************" << endl;
-        cout << "**                     1. Doc thong tin nhan vien                   **" << endl;
-        cout << "**                     2. Xuat thong tin nhan vien                  **" << endl;
-        cout << "**                     3. Them nhan vien                            **" << endl;
-        cout << "**                     4. Xoa nhan vien                             **" << endl;
-        cout << "**                     5. Tim kiem nhan vien                        **" << endl;
-        cout << "**                     6. Sap xep nhan vien                         **" << endl;
-        cout << "**                     0. Thoat                                     **" << endl;
-        cout << "**********************************************************************" << endl;
-        cout <<"Nhap chuc nang: ";
-        cin >> key;
-        switch(key) {
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		cout << "\n\t\t\t         | >>>>>>> HE THONG QUAN LY NHAN VIEN <<<<<<< |";
+		for (int i = 0; i < menu.size(); i++) {
+			if (i == pointer) {
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 125);
+				cout << "\n\t\t\t\t |" << right << setw(10) << ">>  " << left << setw(34) << menu[i] << right << setw(0) << "|";
+			}
+			else {
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+				cout << "\n\t\t\t\t |" << right << setw(10) << "    " << left << setw(34) << menu[i] << right << setw(0) << "|";
+			}
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
+		}
+		int x;
+		bool thoat = false;
+		if (_kbhit) {
+			x = m->phimDiChuyen();
+			switch (x) {
 			case 1:
-				cout << "\nBan da chon doc thong tin nhan vien!!!\n" << endl;
-				QLNV->doc_File(filein);
-				daDoc = true;
-				cout << "\nBan da doc thanh cong!";
-				cout << "\nNhan phim bat ky de tiep tuc!";
-				getch();
-				break;
+			case 3: {
+				pointer += 1;
+				if (pointer == menu.size())
+					pointer = 0;
+				thoat = true;
+				break; }
 			case 2:
-				if(daDoc){
-					cout << "\nBan da chon xuat thong tin nhan vien!!!\n" << endl;
-					QLNV->Xuat_DS();
-					cout << "\nBan da xuat thanh cong!";
-				}else{
-					cout << "\nVui long doc thong tin truoc!!!";
+			case 4: {
+				pointer -= 1;
+				if (pointer == -1)
+					pointer = menu.size() - 1;
+				thoat = true;
+				break; }
+			case 5: {
+				bool daDoc = false;
+				switch (pointer) {
+				case 0:
+					cout << "\nBan da chon doc file nhan vien!\n";
+					system("cls");
+					QLVN->doc_File(file);
+					daDoc = true;
+					cout << "\n\t\tNhan phim bat ky de tiep tuc!\n";
+					getch();
+					break; 
+				case 1:
+					system("cls");
+					if(daDoc) {
+						cout << "\nBan da chon xuat danh sach nhan vien!\n";
+						QLVN->Xuat_DS();
+					}else{
+						cout << "\n\t\tVui long doc file nhan vien truoc!\n";
+					}
+					cout << "\n\t\tNhan phim bat ky de tiep tuc!\n";
+					getch();
+					break; 
+				case 2:
+					if(daDoc) {
+						cout << "\nBan da chon sap xep nhan vien!\n";
+						QLVN->SapXep();
+					}else {
+						cout << "\n\t\tVui long doc file nhan vien truoc!\n";
+					}
+					cout << "\n\t\tNhan phim bat ky de tiep tuc!\n";
+					getch();
+					break;
+				case 3:
+					system("cls");
+					if(daDoc) {
+						cout << "\nBan da chon them nhan vien!\n";
+						QLVN->ThemNV();
+					}else {
+						cout << "\n\t\tVui long doc file nhan vien truoc!\n";
+					}
+					cout << "\n\t\tNhan phim bat ky de tiep tuc!\n";
+					getch();
+					break;
+				case 4:
+					system("cls");
+					if(daDoc) {
+						cout << "\nBan da chon xoa nhan vien!\n";
+						QLVN->XoaNV();
+					}else {
+						cout << "\n\t\tVui long doc file nhan vien truoc!\n";
+					}
+					cout << "\n\t\tNhan phim bat ky de tiep tuc!\n";
+					getch();
+					break;
+				case 5:
+					system("cls");
+					if(daDoc) {
+						cout << "\nBan da chon tim kiem nhan vien!\n";
+						QLVN->TimKiem();
+					}else {
+						cout << "\n\t\tVui long doc file nhan vien truoc!\n";
+					}
+					cout << "\n\t\tNhan phim bat ky de tiep tuc!\n";
+					getch();
+					break;
+				default:
+					return 0;
+					break;
 				}
-				cout << "\nNhan phim bat ky de tiep tuc!";
-				getch();
+				thoat = true;
 				break;
-            case 3:
-                if(daDoc){
-                    cout << "\nBan da chon them nhan vien!!!\n";
-                    QLNV->ThemNV();
-                }
-                else{
-                    cout << "\nVui long doc thong tin truoc!!!";
-                }
-                cout << "\nNhan phim bat ky de tiep tuc!";
-                getch();
-                break;
-            case 4: 
-                if(daDoc){
-                    cout << "\nBan da chon xoa nhan vien!!!\n";
-                    QLNV->XoaNV();
-                }
-                else{
-                    cout << "\nVui long doc thong tin truoc!!!";
-                }
-                cout << "\nNhan phim bat ky de tiep tuc!";
-                getch();
-                break;
-            case 5:
-            	if(daDoc){
-            		cout << "\nBan da chon tim kiem nhan vien!!!\n";
-            		QLNV->TimKiem();
-				}
-				else{
-					cout << "\nVui long doc thong tin nhan vien truoc!!!";
-				}
-				cout << "\nNhap phim bat ky de tiep tuc!";
-				getch();
-				break;
-			case 6:
-				if(daDoc){
-					cout << "\nBan da chon sap xep nhan vien!!!\n";
-					QLNV->SapXep();
-				}
-				else{
-					cout << "\nVui long doc thong tin nhan vien truoc!!!";
-				}
-				cout << "\nNhap phim bat ky de tiep tuc!";
-				getch();
-				break;
-			case 0:
-				cout << "\nBan da chon thoat chuong trinh!!!\n";
-				return 0;
+			}
 			default:
-				cout << "\nChuc nang nay hien khong co, vui long nhap lai!";
-				getch();
 				break;
+			}
 		}
 	}
-	filein.close();
 }
 
 int main() {
-	Menu();
+	MENU();
 }
