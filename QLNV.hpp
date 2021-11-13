@@ -1,7 +1,11 @@
 #include <iostream>
-#include <fstream>
-#include <conio.h>
+#include<fstream>
+#include<iomanip>
+#include <windows.h>
+#include<conio.h>
 #include <string>
+#include <stdio.h>
+#include <vector>
 using namespace std;
 
 struct Date {
@@ -24,6 +28,7 @@ class NhanVien {
         virtual long TinhLuong() = 0;
         long getLuong();
         string getMaNV();
+        string getTen();
         string getNoiSinh();
         int getNamSinh();
         long getLuongCoBan();
@@ -66,4 +71,9 @@ class QuanLyNhanVien {
 		void XoaNV();
 		void SapXep();
 		void TimKiem();
+};
+
+struct Menu {
+    Menu();
+    int phimDiChuyen();
 };
