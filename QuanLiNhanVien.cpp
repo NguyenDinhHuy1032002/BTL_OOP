@@ -1208,7 +1208,7 @@ int MENU_QL() {
 					getch();
 					break; 
 				case 2:
-                    system("cls");
+                    			system("cls");
 					if(daDoc) {
 						cout << "\nBan da chon sap xep nhan vien!\n";
 						QLNV->SapXep();
